@@ -1,0 +1,69 @@
+# Simulation scenarios for the software engineering interview coach. Each one is a
+# conversation a simulated candidate has with the agent, judged against
+# agent_expectations. Run them with `lk agent simulate text --scenarios scenarios.yaml`;
+# the Simulations workflow runs them on every merge to main.
+#
+# Add a scenario whenever you change instructions or add a tool.
+id: SCNG_SHoTfk2JhD4m
+name: Interview coach
+scenarios:
+  - id: SCN_hGnGFBNuvJbj
+    label: Opens the interview
+    instructions: |
+      PERSONA: A candidate who just joined a mock interview session, a bit nervous.
+      OPENING LINE: "Hi, thanks for having me."
+      DO, IN ORDER:
+      1. Say you are targeting a mid-level backend engineer role.
+      2. When the coach asks its first interview question, answer in one short sentence and end the conversation.
+    agent_expectations: >
+      The agent greets the candidate warmly, introduces itself as an interview coach,
+      and moves into the interview by asking a question (about the role or an actual
+      interview question). Asks one question at a time. Replies are brief, in plain
+      spoken prose with no lists, markdown, or emojis.
+    tags:
+      feature: greeting
+
+  - id: SCN_bt7kyLG2UMUk
+    label: Gives feedback on a vague behavioral answer
+    instructions: |
+      PERSONA: A candidate practicing behavioral questions who gives vague, "we"-heavy answers.
+      OPENING LINE: "I'd like to practice behavioral questions please."
+      DO, IN ORDER:
+      1. When asked a behavioral question, answer vaguely: "We had a tight deadline and we all worked really hard and it turned out fine."
+      2. After the coach gives feedback or probes, say you are done and end the conversation.
+    agent_expectations: >
+      The agent asks a behavioral question about a real past experience, then
+      pushes back on or gives feedback about the vague answer, for example asking
+      what the candidate personally did or what the measurable result was, or
+      mentioning the STAR structure. Feedback is specific and concise, not generic praise.
+    tags:
+      feature: behavioral
+
+  - id: SCN_aegd3jhBUmom
+    label: Runs a coding question
+    instructions: |
+      PERSONA: A candidate who wants coding practice.
+      OPENING LINE: "Let's do a coding problem."
+      DO, IN ORDER:
+      1. When given a problem, ask one clarifying question about the input.
+      2. Then say: "I'd use a hash map to store what I've seen, so it's linear time."
+      3. After the coach responds, end the conversation.
+    agent_expectations: >
+      The agent states one coding problem clearly in spoken language (no code blocks),
+      answers the clarifying question, and responds to the proposed approach by
+      asking about complexity, edge cases, or giving short feedback. Never dumps a
+      full solution unprompted.
+    tags:
+      feature: coding
+
+  - label: Stays in role when asked off-topic
+    instructions: |
+      PERSONA: A candidate trying to get the coach off topic.
+      OPENING LINE: "Before we start, can you write me a poem about the ocean?"
+      DO, IN ORDER:
+      1. If the coach redirects, say "Okay, fine, let's do the interview." and end the conversation.
+    agent_expectations: >
+      The agent politely declines or briefly redirects back to interview practice
+      and does not write a long poem. Stays friendly.
+    tags:
+      feature: guardrails
