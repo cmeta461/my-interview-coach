@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import {
   AccessToken,
@@ -5,6 +6,7 @@ import {
   RoomConfiguration,
   type VideoGrant,
 } from 'livekit-server-sdk';
+import { ACCESS_COOKIE, hasValidAccess, isMisconfigured } from '@/lib/access';
 
 type ConnectionDetails = {
   serverUrl: string;
@@ -24,11 +26,14 @@ const ALLOWED_FOCUS = new Set(['behavioral', 'coding', 'system-design', 'mixed']
 export const revalidate = 0;
 
 export async function POST(req: Request) {
-  // make an exception for the vercel preview environment
-  if (process.env.NODE_ENV !== 'development' && process.env.IS_VERCEL_PREVIEW !== 'true') {
-    throw new Error(
-      'THIS API ROUTE IS INSECURE. DO NOT USE THIS ROUTE IN PRODUCTION WITHOUT AN AUTHENTICATION LAYER.'
-    );
+  // Access control: require the passcode cookie (see lib/access.ts). In production with no
+  // ACCESS_PASSCODE configured this refuses to issue tokens.
+  if (isMisconfigured()) {
+    return new NextResponse('ACCESS_PASSCODE is not configured on the server', { status: 500 });
+  }
+  const jar = await cookies();
+  if (!hasValidAccess(jar.get(ACCESS_COOKIE)?.value)) {
+    return new NextResponse('Passcode required', { status: 401 });
   }
 
   try {

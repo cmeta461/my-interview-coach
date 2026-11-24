@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   BracketsCurlyIcon,
   ChatsCircleIcon,
@@ -42,7 +43,15 @@ const STEPS = [
   ['Get feedback', 'Honest, specific coaching after every answer.'],
 ];
 
+export interface AccessState {
+  required: boolean;
+  unlocked: boolean;
+  ready: boolean;
+}
+
 interface WelcomeViewProps {
+  access: AccessState;
+  onUnlock: (passcode: string) => Promise<boolean>;
   startButtonText: string;
   onStartCall: () => void;
   focus: InterviewFocus;
@@ -54,8 +63,24 @@ export const WelcomeView = ({
   onStartCall,
   focus,
   onFocusChange,
+  access,
+  onUnlock,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
+  const [passcode, setPasscode] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const locked = access.required && !access.unlocked;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    const ok = await onUnlock(passcode);
+    setBusy(false);
+    if (!ok) setError('Incorrect passcode. Try again.');
+  };
+
   return (
     <div ref={ref} className="min-h-svh overflow-y-auto px-4 pt-20 pb-10 md:pt-24">
       <section className="mx-auto flex max-w-3xl flex-col items-center text-center">
@@ -105,16 +130,49 @@ export const WelcomeView = ({
           })}
         </div>
 
-        <Button
-          size="lg"
-          onClick={onStartCall}
-          className="mt-8 h-12 w-full max-w-xs rounded-full text-base font-semibold shadow-lg"
-        >
-          {startButtonText}
-        </Button>
-        <p className="text-muted-foreground mt-3 text-xs">
-          Your browser will ask for microphone access.
-        </p>
+        {locked ? (
+          <form onSubmit={submit} className="mt-8 flex w-full max-w-xs flex-col gap-3">
+            <label htmlFor="passcode" className="text-sm font-medium">
+              Enter the passcode to start
+            </label>
+            <input
+              id="passcode"
+              type="password"
+              autoComplete="off"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              className="bg-card border-input focus-visible:ring-ring h-12 rounded-full border px-5 text-center text-base outline-none focus-visible:ring-2"
+              placeholder="Passcode"
+            />
+            {error && (
+              <p role="alert" className="text-destructive text-sm">
+                {error}
+              </p>
+            )}
+            <Button
+              type="submit"
+              size="lg"
+              disabled={busy || passcode.length === 0}
+              className="h-12 rounded-full text-base font-semibold shadow-lg"
+            >
+              {busy ? 'Checking…' : 'Unlock'}
+            </Button>
+          </form>
+        ) : (
+          <>
+            <Button
+              size="lg"
+              onClick={onStartCall}
+              disabled={!access.ready}
+              className="mt-8 h-12 w-full max-w-xs rounded-full text-base font-semibold shadow-lg"
+            >
+              {startButtonText}
+            </Button>
+            <p className="text-muted-foreground mt-3 text-xs">
+              Your browser will ask for microphone access.
+            </p>
+          </>
+        )}
 
         <ol className="mt-14 grid w-full gap-4 text-left md:grid-cols-3">
           {STEPS.map(([title, body], i) => (

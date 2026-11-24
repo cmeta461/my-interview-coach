@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TokenSource } from 'livekit-client';
 import { useSession } from '@livekit/components-react';
 import { WarningIcon } from '@phosphor-icons/react/dist/ssr';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
-import type { InterviewFocus } from '@/components/app/welcome-view';
+import type { AccessState, InterviewFocus } from '@/components/app/welcome-view';
 import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
@@ -30,6 +30,29 @@ interface AppProps {
 
 export function App({ tokenServerId, tokenEndpoint, agentName }: AppProps) {
   const [focus, setFocus] = useState<InterviewFocus>('mixed');
+  const [access, setAccess] = useState<AccessState>({
+    required: false,
+    unlocked: true,
+    ready: false,
+  });
+
+  // Ask the server whether a passcode is needed and whether this browser already unlocked.
+  useEffect(() => {
+    fetch('/api/unlock')
+      .then((r) => r.json())
+      .then((d) => setAccess({ required: !!d.required, unlocked: !!d.unlocked, ready: true }))
+      .catch(() => setAccess({ required: false, unlocked: true, ready: true }));
+  }, []);
+
+  const unlock = useCallback(async (passcode: string) => {
+    const res = await fetch('/api/unlock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ passcode }),
+    });
+    if (res.ok) setAccess((a) => ({ ...a, unlocked: true }));
+    return res.ok;
+  }, []);
 
   // The chosen focus travels to the agent as a participant attribute set by /api/token.
   const tokenSource = useMemo(
@@ -48,7 +71,7 @@ export function App({ tokenServerId, tokenEndpoint, agentName }: AppProps) {
     <AgentSessionProvider session={session}>
       <AppSetup />
       <main className="min-h-svh">
-        <ViewController focus={focus} onFocusChange={setFocus} />
+        <ViewController focus={focus} onFocusChange={setFocus} access={access} onUnlock={unlock} />
       </main>
       <StartAudioButton label="Start Audio" />
       <Toaster

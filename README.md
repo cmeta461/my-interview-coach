@@ -145,6 +145,37 @@ Restart `lk agent dev` after changing agent code.
 
 ---
 
+## Put it online (optional)
+
+Running locally is free and needs nothing else. To share it with others you host the two parts separately:
+
+| Part | Where | Cost |
+| --- | --- | --- |
+| Agent (`agent/`) | **LiveKit Cloud** | Free "Build" plan: 1 deployed agent, 1,000 session minutes, and about $2.50 of AI model credits (roughly 50 minutes of talking). Pay-as-you-go beyond that. |
+| Web app (`frontend/`) | **Vercel** | Free Hobby plan |
+
+**1. Deploy the agent** (from `agent/`, after `lk cloud auth`):
+
+```console
+lk agent deploy
+```
+
+Keep the agent name `my-agent`. Check pricing and limits at <https://livekit.io/pricing>.
+
+**2. Deploy the web app to Vercel.** Import this GitHub repo, set **Root Directory** to `frontend`, and add these environment variables:
+
+```
+LIVEKIT_URL=wss://your-project.livekit.cloud
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+AGENT_NAME=my-agent
+ACCESS_PASSCODE=pick-a-passcode
+```
+
+**Passcode lock.** `ACCESS_PASSCODE` is required in production. Visitors must enter it before they can start an interview, and without it the token route refuses to work, so a public site can't burn through your LiveKit credits. Share the passcode only with people you trust. Locally (`pnpm dev`) the passcode is optional.
+
+---
+
 ## Troubleshooting
 
 - **The page loads but the coach never speaks.** Check that `lk agent dev` is running in the other terminal and that `AGENT_NAME=my-agent` is set in `frontend/.env.local`. Restart `pnpm dev` after editing env files.
@@ -165,7 +196,7 @@ lk agent simulate text --scenarios scenarios.yaml --yes   # simulated interview 
 
 ## Security note
 
-The web app's token route (`frontend/app/api/token/route.ts`) has **no login** and only runs in development mode. It is fine for running on your own laptop. Don't deploy it publicly without adding authentication. Never commit `.env.local` files. They are gitignored.
+The token route (`frontend/app/api/token/route.ts`) is protected by the `ACCESS_PASSCODE` gate (see `frontend/lib/access.ts`). A single shared passcode is simple protection, not per-user accounts. Never commit `.env.local` files. They are gitignored.
 
 ## Credits
 
