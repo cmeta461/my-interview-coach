@@ -12,9 +12,7 @@ from livekit.agents import (
     cli,
     function_tool,
     inference,
-    room_io,
 )
-from livekit.plugins import ai_coustics
 
 from knowledge import KnowledgeBase
 from prompts import build_instructions
@@ -118,13 +116,6 @@ async def my_agent(ctx: JobContext):
     await session.start(
         agent=InterviewCoach(KnowledgeBase(), focus),
         room=ctx.room,
-        room_options=room_io.RoomOptions(
-            audio_input=room_io.AudioInputOptions(
-                noise_cancellation=ai_coustics.audio_enhancement(
-                    model=ai_coustics.EnhancerModel.QUAIL_VF_S
-                ),
-            ),
-        ),
     )
 
     # # Add a virtual avatar to the session, if desired
