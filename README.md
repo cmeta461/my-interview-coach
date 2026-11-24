@@ -160,7 +160,9 @@ Running locally is free and needs nothing else. To share it with others you host
 lk agent deploy
 ```
 
-Keep the agent name `my-agent`. Check pricing and limits at <https://livekit.io/pricing>.
+The first time, use `lk agent create --region us-east` instead (pick any region it lists). It writes `livekit.toml`, which links this folder to your deployed agent, so later `lk agent deploy` runs update it. Check status with `lk agent status` and logs with `lk agent logs`. Keep the agent name `my-agent`. Check pricing and limits at <https://livekit.io/pricing>.
+
+> When the cloud agent is running, stop `lk agent dev` on your laptop (or the two will compete for sessions).
 
 **2. Deploy the web app to Vercel.** Import this GitHub repo, set **Root Directory** to `frontend`, and add these environment variables:
 
