@@ -16,9 +16,9 @@ type ConnectionDetails = {
 };
 
 // NOTE: you are expected to define the following environment variables in `.env.local`:
-const API_KEY = process.env.LIVEKIT_API_KEY;
-const API_SECRET = process.env.LIVEKIT_API_SECRET;
-const LIVEKIT_URL = process.env.LIVEKIT_URL;
+const API_KEY = process.env.LIVEKIT_API_KEY?.trim();
+const API_SECRET = process.env.LIVEKIT_API_SECRET?.trim();
+const LIVEKIT_URL = process.env.LIVEKIT_URL?.trim();
 
 const ALLOWED_FOCUS = new Set(['behavioral', 'coding', 'system-design', 'mixed']);
 

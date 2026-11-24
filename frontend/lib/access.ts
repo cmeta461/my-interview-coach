@@ -12,7 +12,7 @@ export const ACCESS_COOKIE = 'ic_access';
 export const ACCESS_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 export function getPasscode(): string | undefined {
-  const p = process.env.ACCESS_PASSCODE;
+  const p = process.env.ACCESS_PASSCODE?.trim();
   return p && p.length > 0 ? p : undefined;
 }
 
@@ -27,7 +27,7 @@ export function isMisconfigured(): boolean {
 
 function sign(passcode: string): string {
   // Key on the passcode itself plus the LiveKit secret, so changing either invalidates cookies.
-  const key = `${passcode}:${process.env.LIVEKIT_API_SECRET ?? ''}`;
+  const key = `${passcode}:${process.env.LIVEKIT_API_SECRET?.trim() ?? ''}`;
   return createHmac('sha256', key).update('interview-coach-unlocked').digest('hex');
 }
 

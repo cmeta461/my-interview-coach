@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const candidate = typeof body?.passcode === 'string' ? body.passcode : '';
+  const candidate = typeof body?.passcode === 'string' ? body.passcode.trim() : '';
 
   if (!passcodeMatches(candidate)) {
     // Small delay to slow down guessing.

@@ -14,7 +14,7 @@ export default function Page() {
     <App
       tokenServerId={tokenServerId}
       tokenEndpoint={tokenEndpoint}
-      agentName={process.env.AGENT_NAME}
+      agentName={process.env.AGENT_NAME?.trim() || undefined}
       isVideoInputSupported={!isHomepageAgent}
     />
   );
